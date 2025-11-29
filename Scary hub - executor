@@ -1,0 +1,157 @@
+--== SCARY HUB - EXECUTOR (Drag real para PC e CELULAR) ==--
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = PlayerGui
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.Name = "ScaryHub - Executor"
+
+---------------------------------------------------------
+-- BOLINHA (arrastável)
+---------------------------------------------------------
+local Toggle = Instance.new("Frame")
+Toggle.Name = "ToggleButton"
+Toggle.Parent = ScreenGui
+Toggle.Size = UDim2.new(0,50,0,50)
+Toggle.Position = UDim2.new(0.45,0,0.1,0)
+Toggle.BackgroundColor3 = Color3.fromRGB(255,0,0)
+Toggle.Active = true
+Toggle.BorderSizePixel = 0
+Toggle.ZIndex = 10
+
+local UICorner = Instance.new("UICorner", Toggle)
+UICorner.CornerRadius = UDim.new(1,0)
+
+local ToggleBTN = Instance.new("TextButton")
+ToggleBTN.Parent = Toggle
+ToggleBTN.Size = UDim2.new(1,0,1,0)
+ToggleBTN.Text = ""
+ToggleBTN.BackgroundTransparency = 1
+ToggleBTN.ZIndex = 11
+
+---------------------------------------------------------
+-- HUB
+---------------------------------------------------------
+local Hub = Instance.new("Frame")
+Hub.Parent = ScreenGui
+Hub.Size = UDim2.new(0,350,0,220)
+Hub.Position = UDim2.new(0.35,0,0.25,0)
+Hub.BackgroundColor3 = Color3.fromRGB(255,0,0)
+Hub.Visible = false
+Hub.Active = true
+Hub.BorderSizePixel = 0
+
+local HubCorner = Instance.new("UICorner", Hub)
+HubCorner.CornerRadius = UDim.new(0,10)
+
+local Title = Instance.new("TextLabel")
+Title.Parent = Hub
+Title.Size = UDim2.new(1,0,0,40)
+Title.BackgroundTransparency = 1
+Title.Text = "Scary Hub - Executor"
+Title.TextScaled = true
+Title.TextColor3 = Color3.fromRGB(0,0,0)
+
+local Box = Instance.new("TextBox")
+Box.Parent = Hub
+Box.Size = UDim2.new(0.8,0,0,40)
+Box.Position = UDim2.new(0.1,0,0.35,0)
+Box.BackgroundColor3 = Color3.fromRGB(150,150,150)
+Box.Text = ""
+Box.TextScaled = true
+
+local Exec = Instance.new("TextButton")
+Exec.Parent = Hub
+Exec.Size = UDim2.new(0.5,0,0,40)
+Exec.Position = UDim2.new(0.25,0,0.65,0)
+Exec.BackgroundColor3 = Color3.fromRGB(0,0,0)
+Exec.Text = "Executar"
+Exec.TextScaled = true
+Exec.TextColor3 = Color3.fromRGB(255,255,255)
+
+---------------------------------------------------------
+-- ABRIR FECHAR HUB
+---------------------------------------------------------
+ToggleBTN.MouseButton1Click:Connect(function()
+    Hub.Visible = not Hub.Visible
+end)
+
+---------------------------------------------------------
+-- EXECUTOR UNIVERSAL
+---------------------------------------------------------
+local function UniversalExecute(code)
+    if not code or code == "" then return end
+
+    if DeltaExecute then return DeltaExecute(code) end
+    if exescript then return exescript(code) end
+    if getexecutor and getexecutor().Execute then return getexecutor().Execute(code) end
+    if syn and syn.run then return syn.run(code) end
+
+    local f = loadstring(code)
+    if f then pcall(f) end
+end
+
+Exec.MouseButton1Click:Connect(function()
+    UniversalExecute(Box.Text)
+end)
+
+---------------------------------------------------------
+-- SISTEMA DE DRAG DEFINITIVO (PC + CELULAR)
+---------------------------------------------------------
+local UIS = game:GetService("UserInputService")
+
+local function MakeDrag(Frame)
+    local dragging = false
+    local dragStart
+    local startPos
+
+    local function Update(input)
+        local delta = input.Position - dragStart
+        Frame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+
+    Frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = Frame.Position
+        end
+    end)
+
+    Frame.InputChanged:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch) and dragging then
+            Update(input)
+        end
+    end)
+
+    UIS.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+end
+
+-- APLICA DRAG NA BOLINHA E NO HUB
+MakeDrag(Toggle)
+MakeDrag(Hub)
+
+---------------------------------------------------------
+-- ANTI-SUMIÇO DA BOLINHA
+---------------------------------------------------------
+Toggle.AncestryChanged:Connect(function()
+    if not Toggle.Parent then
+        Toggle.Parent = ScreenGui
+    end
+end)
